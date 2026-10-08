@@ -54,14 +54,23 @@ If SUBDIR-P is t, play videos in sub-directories too."
   (let* ((emms-track-description-function #'emms-track-simple-description)
          (items (dired-get-marked-files))
          (regexp (my-file-extensions-to-regexp my-media-file-extensions))
+         (dir default-directory)
          found)
+
+    ;; Clear old playlist and force its default-directory
+    ;; to the current Dired directory.
+    (let ((playlist-buffer
+           (get-buffer-create emms-playlist-buffer-name)))
+      (with-current-buffer playlist-buffer
+        (emms-playlist-mode)
+        (setq default-directory dir)
+        (emms-playlist-current-clear)))
+
+    (sit-for 1)
+
     (cond
      ;; at least two items are selected
      ((> (length items) 1)
-      ;; clear existing playlist
-      (emms-playlist-current-clear)
-      (sit-for 1)
-
       (dolist (item items)
         (cond
          ((file-directory-p item)
